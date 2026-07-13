@@ -70,7 +70,7 @@ curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:$PANEL_PORT/managepanel/
 
 echo "🔧 Building nginx.conf for port: $NGINX_PORT"
 
-# ===== ایجاد nginx.conf با قابلیت اصلاح لینک =====
+# ===== ایجاد nginx.conf با قابلیت اصلاح لینک داینامیک =====
 cat > /etc/nginx/nginx.conf << 'EOF'
 worker_processes 1;
 events { worker_connections 1024; }
@@ -78,8 +78,6 @@ events { worker_connections 1024; }
 http {
     include mime.types;
 
-    # تابع برای اصلاح لینک‌های vless
-    # تبدیل :8080 به :443 و اضافه کردن TLS
     server {
         listen 3000;
 
@@ -94,7 +92,7 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        # ===== مسیر ساب‌اسکریپشن با اصلاح لینک =====
+        # ===== مسیر ساب‌اسکریپشن با اصلاح لینک داینامیک =====
         location /sub/ {
             # دریافت ساب از پنل
             proxy_pass http://127.0.0.1:2096/sub/;
@@ -104,11 +102,10 @@ http {
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
 
-            # اصلاح لینک‌ها با sed
-            # تبدیل :8080 به :443 و اضافه کردن TLS
+            # اصلاح لینک‌ها با استفاده از متغیر $host (داینامیک)
             sub_filter_types text/plain;
-            sub_filter 's-nl-faryad-production.up.railway.app:8080' 's-nl-faryad-production.up.railway.app:443';
-            sub_filter 'security=none' 'security=tls&sni=s-nl-faryad-production.up.railway.app&fp=chrome&insecure=0&allowInsecure=0';
+            sub_filter ':8080' ':443';
+            sub_filter 'security=none' 'security=tls&sni=$host&fp=chrome&insecure=0&allowInsecure=0';
             sub_filter_once off;
         }
 
