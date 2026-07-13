@@ -36,6 +36,7 @@
    - `Dockerfile`
    - `start.sh`
    - `nginx.conf.template` (اختیاری)
+   - `README.md` (اختیاری)
 
 ### ۲. دیپلوی در Railway
 
