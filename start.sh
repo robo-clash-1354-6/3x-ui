@@ -104,8 +104,16 @@ http {
 
             # اصلاح لینک‌ها با استفاده از متغیر $host (داینامیک)
             sub_filter_types text/plain;
+            
+            # 1. تبدیل پورت 8080 به 443
             sub_filter ':8080' ':443';
+            
+            # 2. اضافه کردن TLS و پارامترهای مربوطه
             sub_filter 'security=none' 'security=tls&sni=$host&fp=chrome&insecure=0&allowInsecure=0';
+            
+            # 3. حذف خط تیره ابتدای نام کانفیگ
+            sub_filter '#-' '#';
+            
             sub_filter_once off;
         }
 
