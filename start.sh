@@ -48,8 +48,13 @@ fail2ban-server -x start || echo "⚠️ Fail2ban already running"
 
 cd /usr/local/x-ui
 
-echo "🔧 Configuring Sanaei Panel on port $PANEL_PORT..."
-./x-ui setting -port $PANEL_PORT -webBasePath /managepanel/ -username admin -password admin -listenIP 0.0.0.0
+# ===== تنظیمات اولیه پنل (فقط در صورت نبود دیتابیس) =====
+if [ ! -f "/etc/x-ui/x-ui.db" ]; then
+    echo "🔧 First run: Configuring Sanaei Panel on port $PANEL_PORT..."
+    ./x-ui setting -port $PANEL_PORT -webBasePath /managepanel/ -username admin -password admin -listenIP 0.0.0.0
+else
+    echo "✅ Database already exists. Skipping initial configuration."
+fi
 
 echo "🔧 Enabling Xray access log..."
 ./x-ui xray setlog -access /var/log/x-ui/access.log -error /var/log/x-ui/error.log -level warning
