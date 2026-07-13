@@ -6,11 +6,22 @@ echo "🚀 Starting Sanaei Panel + nginx reverse proxy..."
 export NGINX_PORT=3000
 export PANEL_PORT=2053
 
+# ===== تنظیم مسیر دیتابیس (برای اطمینان از ذخیره‌سازی در Volume) =====
+export XUI_DB_PATH="/etc/x-ui/x-ui.db"
+echo "📁 Database path: $XUI_DB_PATH"
+
+# ===== بررسی وجود Volume =====
+if [ -d "/etc/x-ui" ]; then
+    echo "✅ Volume is mounted at /etc/x-ui"
+    ls -la /etc/x-ui/
+else
+    echo "⚠️ Volume is NOT mounted at /etc/x-ui"
+fi
+
 # ===== راه‌اندازی Fail2ban =====
 echo "🛡️ Starting Fail2ban service..."
 mkdir -p /var/run/fail2ban
 
-# پیکربندی اولیه Fail2ban برای Xray
 cat > /etc/fail2ban/jail.local << 'EOF'
 [DEFAULT]
 bantime = 3600
@@ -33,7 +44,6 @@ failregex = ^.*\"GET /.* HTTP/1\.[01]\" 404 .*$
 ignoreregex =
 EOF
 
-# شروع Fail2ban
 fail2ban-server -x start || echo "⚠️ Fail2ban already running"
 
 cd /usr/local/x-ui
@@ -75,7 +85,6 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        # ===== مسیر ساب‌اسکریپشن (فقط خام) =====
         location /sub/ {
             proxy_pass http://127.0.0.1:2096/sub/;
             proxy_http_version 1.1;
@@ -85,7 +94,6 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        # ===== مسیر اینباند VLESS/WebSocket =====
         location / {
             proxy_pass http://127.0.0.1:8080;
             proxy_http_version 1.1;
